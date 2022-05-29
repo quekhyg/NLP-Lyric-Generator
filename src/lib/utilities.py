@@ -1,7 +1,7 @@
 import re
 import os
 
-def load_corpus(path = '../../Data', end_song_token = '\n\n<EOS>\n\n'):
+def load_corpus(path = '../../data', end_song_token = '\n\n<EOS>\n\n'):
     """Loads corpus from filepath
 
     Args: 
@@ -47,6 +47,8 @@ def decontraction(text, **kwargs):
     
     return text
 
+def to_lower(text, **kwargs):
+    return text.lower()
 
 def remove_punct(text, keep=None):
     """Remove punctuations from text
@@ -149,9 +151,12 @@ def split_song(song_text, verse_types = ['<BRIDGE>','<CHORUS>','<OTHERS>','<PREC
         if stripwhite:
             verses = [x.strip() for x in verses]
         all_verses[verse_type] = verses
-    return all_verses    
+    return all_verses
 
-def preprocess_text(text, fun_list = [decontraction, remove_punct, remove_emoji, remove_url], **kwargs):
+def remove_annotation(text, annotation = '<.+>'):
+    return re.sub(annotation, '', text)
+
+def preprocess_text(text, fun_list = [to_lower, decontraction, remove_punct, remove_emoji, remove_url], **kwargs):
     """Performs standard preprocessing functions on text
 
     Args: 
