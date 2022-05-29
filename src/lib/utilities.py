@@ -1,10 +1,31 @@
 import re
+import os
 
-def decontraction(text):
+def load_corpus(path = '../../Data', end_song_token = '\n\n<EOS>\n\n'):
+    """Loads corpus from filepath
+
+    Args: 
+      path (str): string specifying the filepath
+      end_song_token (str): custom token indicating the end of each song
+    
+    Returns:
+      corpus (str) string containing the corpus, with each song separated by the end_song_token
+    """
+    corpus = ''
+    all_files = os.listdir(path)
+    for file in all_files:
+        with open(os.path.join(path, file)) as f:
+            text = f.read()
+            corpus += text
+        corpus += end_song_token
+    return corpus
+
+def decontraction(text, **kwargs):
     """Expand most common contractions from string
 
     Args: 
       text (str): string containing contractions to expand
+      **kwargs : Unused, included for compatibility with preprocess_text function
     
     Returns:
       text (str) string with contractions expanded
@@ -50,11 +71,12 @@ def remove_punct(text, keep=None):
     return text
 
 
-def remove_emoji(text):
+def remove_emoji(text, **kwargs):
     """Remove punctuations from text
 
     Args: 
       text (str): string containing emojis to remove
+      **kwargs : Unused, included for compatibility with preprocess_text function
     
     Returns:
       text (str) string with emojis expanded
@@ -72,11 +94,12 @@ def remove_emoji(text):
     return emoji_pattern.sub(r'', text)
 
 
-def remove_url(text):
+def remove_url(text, **kwargs):
     """Remove URLs from text
 
     Args: 
       text (str): string containing URLs to remove
+      **kwargs : Unused, included for compatibility with preprocess_text function
     
     Returns:
       text (str) string with URLs expanded
@@ -84,4 +107,61 @@ def remove_url(text):
 
     return " ".join(re.sub("([^0-9A-Za-z \t])|(\w+:\/\/\S+)", "", text).split())
 
+def split_text(text, delim = None, level = 'song'):
+    """Converts text into a list of texts
 
+    Args:
+      text (str): string to be split
+      delim (str or None): delimiter to split the text by. if not provided, level will be used to determine delimiter
+      level ('song', 'verse', 'line', 'word'): 4 user-defined options, which determines the default delimiter if delim is not provided.
+    
+    Returns:
+      text (list) list of strs from the text split by delimiter
+    """
+    if delim is None:
+        if level == 'song':
+            delim = '\n\n<EOS>\n\n'
+        elif level == 'verse':
+            delim = '(<BRIDGE>|<CHORUS>|<OTHERS>|<PRECHORUS>|<PRELUDE>|<VERSE>)'
+        elif level == 'line':
+            delim = '\n+'
+        elif level == 'word':
+            delim = '\s+'
+        else:
+            print('Error: Since no delimiter was provided, level argument should be one of these options: \'song\', \'verse\', \'line\', \'word\'')
+            return None
+    return re.split(delim, text)
+
+def split_song(song_text, verse_types = ['<BRIDGE>','<CHORUS>','<OTHERS>','<PRECHORUS>','<PRELUDE>','<VERSE>'], stripwhite = True):
+    """Converts song text into a dictionary of each type of verse
+
+    Args:
+      song_text (str): song string to be split
+      verse_types (list of tokens): list of standard annotated tokens indicating the type of verse
+      stripwhite (bool): whether to remove whitespace at each end of each verse
+    
+    Returns:
+      verses (dict) dictionary. Each key corresponds to a type of verse, each value is a list of strings, with each string corresponding to each instance of that verse type. E.g. <VERSE>: [verse1str, verse2str, verse3str]
+    """           
+    all_verses = {}
+    for verse_type in verse_types:
+        verses = re.findall(verse_type+'(.+?)<', song_text, re.DOTALL)
+        if stripwhite:
+            verses = [x.strip() for x in verses]
+        all_verses[verse_type] = verses
+    return all_verses    
+
+def preprocess_text(text, fun_list = [decontraction, remove_punct, remove_emoji, remove_url], **kwargs):
+    """Performs standard preprocessing functions on text
+
+    Args: 
+      text (str): string containing text to be processed
+      fun_list (list of functions) : List of functions to be sequentially performed on the text
+      **kwargs (args) : Keyword arguments to be passed into each function in fun_list
+    
+    Returns:
+      text (str) string of processed text
+    """
+    for fun in fun_list:
+        text = fun(text, **kwargs)
+    return text
