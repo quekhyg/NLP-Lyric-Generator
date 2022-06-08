@@ -1,6 +1,7 @@
 import utilities as utils
 import numpy as np
 from numpy.linalg import norm
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 class Sentiment:
     """
@@ -71,13 +72,9 @@ class Sentiment:
         Sentiment.topn = topn
 
 
-    def score_sentiment(self):
-        """Compute the cosine similarity score of each text with each theme
-
-        Args:
-
-        Returns:
-        """
+    def score_word_vector_sentiment(self):
+        """Compute the cosine similarity score of each text with each theme"""
+        
         # check if original & generated tokens exist
         if not self.original_tokens or not self.generated_tokens:
             error_text = """ORIGINAL or GENERATED tokens does NOT exist.
@@ -109,4 +106,26 @@ class Sentiment:
             generated_cossim = np.dot(generated_vectors_avg,vector)/(norm(generated_vectors_avg)*norm(vector))
             sentiment_scores['generated'][theme] = generated_cossim
 
-        self.sentiment_scores = sentiment_scores
+        self.word_vector_sentiment_scores = sentiment_scores
+
+
+    def score_vader_sentiment(self):
+        """Compute the vader sentiment scores of original & generated text """
+        
+        # check if original & generated tokens exist
+        if not self.original_tokens or not self.generated_tokens:
+            error_text = """ORIGINAL or GENERATED tokens does NOT exist.
+            Either pass it into the class using Sentimentality(original_text=tokens, generated_text=tokens)
+            or use the clean_text method. """
+            raise AttributeError(error_text)
+
+        # initialize
+        sentiment_scores = {'original':{}, 'generated':{}}
+
+        # get mean vader sentiment score for original & generated text
+        sid = SentimentIntensityAnalyzer()
+
+        sentiment_scores['original'] = sid.polarity_scores(' '.join(self.original_tokens))
+        sentiment_scores['generated'] = sid.polarity_scores(' '.join(self.generated_tokens))
+
+        self.vader_sentiment_scores = sentiment_scores
