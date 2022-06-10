@@ -1,7 +1,9 @@
-import utilities as utils
+from . import utilities as utils
 import numpy as np
 from numpy.linalg import norm
+import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+nltk.download('vader_lexicon')
 
 class Sentiment:
     """
