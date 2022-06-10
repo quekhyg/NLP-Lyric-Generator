@@ -1,6 +1,7 @@
 import re
 import os
 from collections import Counter
+import numpy as np
 import tensorflow.random as rnd
 
 def load_corpus(path = '../../data', end_song_token = '\n\n<EOS>\n\n'):
@@ -21,6 +22,24 @@ def load_corpus(path = '../../data', end_song_token = '\n\n<EOS>\n\n'):
             corpus += text
         corpus += end_song_token
     return corpus
+
+def split_corpus(path = '../../data', val_split = 0.2, end_song_token = '\n\n<EOS>\n\n', random_seed = 2022):
+    all_files = os.listdir(path)
+    rng = np.random.default_rng(seed = random_seed)
+    rng.shuffle(all_files)
+    n = len(all_files)
+    train_files = all_files[:int((1-val_split)*n)]
+    val_files = all_files[int((1-val_split)*n):]
+    train_corpus, val_corpus = '',''
+    for file in train_files:
+        with open(os.path.join(path, file)) as f:
+            train_corpus += f.read()
+        train_corpus += end_song_token
+    for file in val_files:
+        with open(os.path.join(path, file)) as f:
+            val_corpus += f.read()
+        val_corpus += end_song_token
+    return train_corpus, val_corpus, train_files, val_files
 
 def decontraction(text, **kwargs):
     """Expand most common contractions from string
