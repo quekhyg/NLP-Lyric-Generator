@@ -29,3 +29,16 @@ def construct_datasets(x_encoder, x_decoder, y, validation_split, batch_size, bu
     val_dataset_final = val_dataset.batch(batch_size).cache().prefetch(buffer_size=tf.data.AUTOTUNE)
     
     return train_dataset_final, val_dataset_final
+
+def ind_to_input_fun(indices, depth, **kwargs):
+    input_oh = tf.one_hot(indices, depth = depth)
+    x = tf.expand_dims(input_oh, 0)
+    return [x,x]
+
+def update_input_fun(curr_input, pred_index, depth, **kwargs):
+    #assert curr_input[0] == curr_input[1], 'Error: input to encoder and decoder are different'
+    x = curr_input[0]
+    pred_oh = tf.one_hot(pred_index, depth = depth)
+    input_index = tf.expand_dims([pred_oh], 0)
+    x = tf.concat([x[:,1:,:],input_index], 1)
+    return [x,x]
