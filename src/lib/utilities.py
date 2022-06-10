@@ -1,5 +1,6 @@
 import re
 import os
+from collections import Counter
 
 def load_corpus(path = '../../data', end_song_token = '\n\n<EOS>\n\n'):
     """Loads corpus from filepath
@@ -170,3 +171,29 @@ def preprocess_text(text, fun_list = [to_lower, decontraction, remove_punct, rem
     for fun in fun_list:
         text = fun(text, **kwargs)
     return text
+
+def tokenize_text(text, newline_token):
+    words = preprocess_text(text, fun_list = [to_lower, decontraction, remove_punct], keep = '\<|\>')
+    words = re.sub('\n',f' {newline_token} ', words)
+    words = re.split(' +', words) #Tokenising
+    return words
+
+def tokenize_corpus(corpus_text, window_length, end_token = '<eos>', start_token = '<cls>', pad_token = '<pad>', unk_token = '<unk>'):
+    words = tokenize_text(corpus_text)
+    
+    word_count = Counter(words)
+    for special_token in [end_token, start_token, pad_token, unk_token]:
+        if special_token not in word_count:
+            word_count[special_token] = 0
+
+    #Reference Dictionaries to convert one-hot index to string and vice versa
+    index_to_vocab = {i: k for i, k in enumerate(word_count.keys())}
+    vocab_to_index = {k: i for i, k in enumerate(word_count.keys())}
+
+    songs = ' '.join(words)
+    songs = songs.split(f' \n \n {end_token} \n \n ')
+    songs = [song.split(' ') for song in songs]
+    songs = [[pad_token]*(window_length-1) + [start_token] + song + [end_token] + [pad_token]*(window_length-1) for song in songs]
+    songs_token_ind = [[vocab_to_index.get(x) for x in song] for song in songs]
+    
+    return words, word_count, index_to_vocab, vocab_to_index, songs, songs_token_ind
