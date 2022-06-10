@@ -1,6 +1,7 @@
 import re
 import os
 from collections import Counter
+import tensorflow.random as rnd
 
 def load_corpus(path = '../../data', end_song_token = '\n\n<EOS>\n\n'):
     """Loads corpus from filepath
@@ -178,8 +179,11 @@ def tokenize_text(text, newline_token):
     words = re.split(' +', words) #Tokenising
     return words
 
-def tokenize_corpus(corpus_text, window_length, end_token = '<eos>', start_token = '<cls>', pad_token = '<pad>', unk_token = '<unk>'):
-    words = tokenize_text(corpus_text)
+def tokenize_corpus(corpus_text, window_length,
+                    end_token = '<eos>', start_token = '<cls>',
+                    pad_token = '<pad>', unk_token = '<unk>',
+                    newline_token = '<new>'):
+    words = tokenize_text(corpus_text, newline_token)
     
     word_count = Counter(words)
     for special_token in [end_token, start_token, pad_token, unk_token]:
@@ -197,3 +201,48 @@ def tokenize_corpus(corpus_text, window_length, end_token = '<eos>', start_token
     songs_token_ind = [[vocab_to_index.get(x) for x in song] for song in songs]
     
     return words, word_count, index_to_vocab, vocab_to_index, songs, songs_token_ind
+
+
+def generate_text(model,
+                  ind_to_input_fun, update_input_fun,
+                  start_string,
+                  window_length,
+                  vocab_to_index_dict, index_to_vocab_dict,
+                  vocab_size = None,
+                  num_generate = 100, temperature = 1.0,
+                  random_seed = 2022,
+                  end_token = '<eos>', start_token = '<cls>',
+                  pad_token = '<pad>', unk_token = '<unk>',
+                  newline_token = '<new>',
+                  **kwargs):
+    if vocab_size is None:
+        vocab_size = max(vocab_to_index_dict.values())
+    # Converting our start string to numbers (vectorizing).
+    tokenized_str = tokenize_text(start_string, newline_token)
+    input_indices = [vocab_to_index_dict.get(s) for i, s in enumerate(tokenized_str) if i < window_length-1]
+    input_indices = [i if i is not None else vocab_to_index_dict.get(unk_token) for i in input_indices]
+    input_indices = [vocab_to_index_dict.get(pad_token)]*(window_length - len(input_indices)-1) + [vocab_to_index_dict.get(start_token)] + input_indices
+    
+    model_input = ind_to_input_fun(input_indices, **kwargs)
+
+    # Empty string to store our results.
+    text_generated = []
+
+    # Here batch size == 1.
+    model.reset_states()
+    for word_index in range(num_generate):
+        prediction = model.predict(model_input)
+
+        # Using a categorical distribution to predict the character returned by the model.
+        prediction = prediction / temperature
+        predicted_id = rnd.categorical(prediction, num_samples=1, seed = random_seed)[-1,0]
+        
+        # Updating model input with new predicted word
+        model_input = update_input_fun(model_input, predicted_id, **kwargs)
+        
+        pred_word = index_to_vocab_dict[predicted_id.numpy()]
+        text_generated.append(pred_word)
+        if pred_word == end_token:
+            break
+    
+    return (start_string + ' ' + ' '.join(text_generated)), text_generated
