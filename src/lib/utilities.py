@@ -204,11 +204,11 @@ def tokenize_corpus(corpus_text, window_length,
                     index_to_vocab = None, vocab_to_index = None,
                     end_token = '<eos>', start_token = '<cls>',
                     pad_token = '<pad>', unk_token = '<unk>',
-                    newline_token = '<new>'):
+                    newline_token = '<new>', mask_token = '<mask>'):
     words = tokenize_text(corpus_text, newline_token)
     
     word_count = Counter(words)
-    for special_token in [end_token, start_token, pad_token, unk_token]:
+    for special_token in [end_token, start_token, pad_token, unk_token, mask_token]:
         if special_token not in word_count:
             word_count[special_token] = 0
 
@@ -237,7 +237,7 @@ def generate_text(model,
                   random_seed = 2022,
                   end_token = '<eos>', start_token = '<cls>',
                   pad_token = '<pad>', unk_token = '<unk>',
-                  newline_token = '<new>',
+                  newline_token = '<new>', mask_token = '<mask>',
                   **kwargs):
     if vocab_size is None:
         vocab_size = max(vocab_to_index_dict.values())
@@ -263,7 +263,7 @@ def generate_text(model,
         
         pred_word = index_to_vocab_dict[predicted_id.numpy()]
         
-        if pred_word in [start_token, pad_token, unk_token]:
+        if pred_word in [start_token, pad_token, unk_token, mask_token]:
             continue
         if pred_word == end_token:
             break
