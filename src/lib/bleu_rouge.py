@@ -78,7 +78,10 @@ class bleu_rouge:
         bleu4 = sentence_bleu(ref, generated_text, weights=(0.25, 0.25, 0.25, 0.25))
         bleus = [bleu1, bleu2, bleu3, bleu4]
         bleus = [bleu for bleu in bleus if not bleu < 0.0001] # remove bleu-n that are very small due to no overlap
-        avg_bleu = sum(bleus) / len(bleus)
+        if len(bleus) == 0:
+            avg_bleu = 0
+        else:
+            avg_bleu = sum(bleus) / len(bleus)
 
         self.bleu_scores = {'BLEU-1':bleu1, 'BLEU-2':bleu2, 'BLEU-3':bleu3, 'BLEU-4':bleu4, 'Avg':avg_bleu}
 
