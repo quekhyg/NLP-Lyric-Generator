@@ -3,6 +3,10 @@ import os
 from collections import Counter
 import numpy as np
 import tensorflow.random as rnd
+import spacy
+from sklearn.metrics.pairwise import cosine_similarity
+
+nlp = spacy.load("en_core_web_lg")
 
 def load_corpus(path = '../../data', end_song_token = '\n\n<EOS>\n\n'):
     """Loads corpus from filepath
@@ -194,7 +198,7 @@ def preprocess_text(text, fun_list = [to_lower, decontraction, remove_punct, rem
 
 def tokenize_text(text, newline_token):
     words = preprocess_text(text, fun_list = [to_lower, decontraction, remove_punct], keep = '\<|\>')
-    words = re.sub('\n',f' {newline_token} ', words)
+    words = re.sub(r'\n',f' {newline_token} ', words)
     words = re.split(' +', words) #Tokenising
     return words
 
@@ -214,7 +218,7 @@ def tokenize_corpus(corpus_text, window_length,
     vocab_to_index = {k: i for i, k in enumerate(word_count.keys())}
 
     songs = ' '.join(words)
-    songs = songs.split(f' \n \n {end_token} \n \n ')
+    songs = songs.split(f' {newline_token} {newline_token} {end_token} {newline_token} {newline_token} ')
     songs = [song.split(' ') for song in songs]
     songs = [[pad_token]*(window_length-1) + [start_token] + song + [end_token] + [pad_token]*(window_length-1) for song in songs]
     songs_token_ind = [[vocab_to_index.get(x) for x in song] for song in songs]
@@ -254,7 +258,7 @@ def generate_text(model,
 
         # Using a categorical distribution to predict the character returned by the model.
         prediction = prediction / temperature
-        predicted_id = rnd.categorical(prediction, num_samples=1, seed = random_seed)[-1,0]
+        predicted_id = rnd.categorical(np.log(prediction), num_samples=1, seed = random_seed)[-1,0]
         
         # Updating model input with new predicted word
         model_input = update_input_fun(model_input, predicted_id, **kwargs)
@@ -265,3 +269,18 @@ def generate_text(model,
             break
     
     return (start_string + ' ' + ' '.join(text_generated)), text_generated
+
+
+def find_cossim(generated_text, corpus_text):
+    """Find cosine similarity between generated text and full / validation corpus.
+
+    Args: 
+      generated_text (str): Generated lyrics by lyrics generation model
+      corpus_text (str) : Full Corpus from load_corpus function or Validation Corpus from split_corpus function
+    
+    Returns:
+      cosine_similarity (float) : Cosine similarity between the vectors of the generated lyrics and the corpus
+    """
+    gen_text = nlp(generated_text)
+    corp_text = nlp(corpus_text)
+    return cosine_similarity([gen_text.vector], [corp_text.vector])[0][0]
