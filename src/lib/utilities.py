@@ -254,20 +254,27 @@ def generate_text(model,
 
     # Here batch size == 1.
     model.reset_states()
-    for word_index in range(num_generate):
+    while len(text_generated) < num_generate:
         prediction = model.predict(model_input)
 
         # Using a categorical distribution to predict the character returned by the model.
         prediction = prediction / temperature
         predicted_id = rnd.categorical(np.log(prediction), num_samples=1, seed = random_seed)[-1,0]
         
+        pred_word = index_to_vocab_dict[predicted_id.numpy()]
+        
+        if pred_word in [start_token, pad_token, unk_token]:
+            continue
+        if pred_word == end_token:
+            break
+        if pred_word == newline_token:
+            pred_word = '\n'
+        
         # Updating model input with new predicted word
         model_input = update_input_fun(model_input, predicted_id, **kwargs)
         
-        pred_word = index_to_vocab_dict[predicted_id.numpy()]
         text_generated.append(pred_word)
-        if pred_word == end_token:
-            break
+        
     
     return (start_string + ' ' + ' '.join(text_generated)), text_generated
 
