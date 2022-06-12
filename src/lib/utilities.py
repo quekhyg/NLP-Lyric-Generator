@@ -3,6 +3,10 @@ import os
 from collections import Counter
 import numpy as np
 import tensorflow.random as rnd
+import spacy
+from sklearn.metrics.pairwise import cosine_similarity
+
+nlp = spacy.load("en_core_web_lg")
 
 def load_corpus(path = '../../data', end_song_token = '\n\n<EOS>\n\n'):
     """Loads corpus from filepath
@@ -265,3 +269,18 @@ def generate_text(model,
             break
     
     return (start_string + ' ' + ' '.join(text_generated)), text_generated
+
+
+def find_cossim(generated_text, corpus_text):
+    """Find cosine similarity between generated text and full / validation corpus.
+
+    Args: 
+      generated_text (str): Generated lyrics by lyrics generation model
+      corpus_text (str) : Full Corpus from load_corpus function or Validation Corpus from split_corpus function
+    
+    Returns:
+      cosine_similarity (float) : Cosine similarity between the vectors of the generated lyrics and the corpus
+    """
+    gen_text = nlp(generated_text)
+    corp_text = nlp(corpus_text)
+    return cosine_similarity([gen_text.vector], [corp_text.vector])[0][0]
