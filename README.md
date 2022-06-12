@@ -6,4 +6,4 @@ We experiment with generating song lyrics with various NN architectures, trained
 1. "data" contains the annotated corpus in .txt format
 2. "src/bin" contains the ML models
 3. "src/lib" contains utilities and useful functions
-4. "output" contains the model outputs
+4. "output" contains the model outputs in .txt format
