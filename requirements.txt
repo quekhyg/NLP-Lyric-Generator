@@ -1,3 +1,5 @@
 tensorflow
 transformers
 spacy
+rouge
+nltk
