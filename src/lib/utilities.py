@@ -199,6 +199,7 @@ def tokenize_text(text, newline_token):
     return words
 
 def tokenize_corpus(corpus_text, window_length,
+                    index_to_vocab = None, vocab_to_index = None,
                     end_token = '<eos>', start_token = '<cls>',
                     pad_token = '<pad>', unk_token = '<unk>',
                     newline_token = '<new>'):
@@ -210,8 +211,10 @@ def tokenize_corpus(corpus_text, window_length,
             word_count[special_token] = 0
 
     #Reference Dictionaries to convert one-hot index to string and vice versa
-    index_to_vocab = {i: k for i, k in enumerate(word_count.keys())}
-    vocab_to_index = {k: i for i, k in enumerate(word_count.keys())}
+    if index_to_vocab is None:
+        index_to_vocab = {i: k for i, k in enumerate(word_count.keys())}
+    if vocab_to_index is None:
+        vocab_to_index = {k: i for i, k in enumerate(word_count.keys())}
 
     songs = ' '.join(words)
     songs = songs.split(f' {newline_token} {newline_token} {end_token} {newline_token} {newline_token} ')
