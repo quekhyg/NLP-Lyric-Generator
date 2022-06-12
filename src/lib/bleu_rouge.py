@@ -1,6 +1,7 @@
 import random
 import numpy as np
 from nltk.translate.bleu_score import sentence_bleu
+from rouge import Rouge
 
 class bleu_rouge:
     """
@@ -83,4 +84,33 @@ class bleu_rouge:
 
         return {'BLEU-1':bleu1, 'BLEU-2':bleu2, 'BLEU-3':bleu3, 'BLEU-4':bleu4, 'Avg':avg_bleu}
 
+    
+    def compute_rouge(self, prompt, generated_text, verbose=True):
+        """Computes the cumulative n-gram rouge score up to 4-gram. The average is also
+        returned.
+        Args:
+        prompt (str): prompt used to generate text. this should be from the sampled prompts
+        generated_text (str): the generated text using the prompt
+        verbose (bool): prints out the tokenized references and generated text 
+        
+        Returns:
+        dict containing scores for ROUGE-1 to ROUGE-4 and the average of them
+        """
+
+        rouge = Rouge()
+        ref = self.prompt_ref.get(prompt)
+        if not ref:
+            error_text = """PROMPT does NOT exist in sampled prompts.
+            Run get_prompt_reference() to get prompt samples and check
+            bleu_rogue.prompt_ref for the set of prompts and references"""
+            raise AttributeError(error_text)
+
+        #ref = [ref.split(' ')] # ref is list of tokens in list of ref
+        #generated_text = generated_text.split(' ')
+        if verbose:
+            print('Reference is {}'.format(ref))
+            print('Generated text is {}'.format(generated_text))
+            
+        scores = rouge.get_scores(generated_text, ref, avg=True)
+        return scores
     
