@@ -205,7 +205,8 @@ def tokenize_corpus(corpus_text, window_length,
                     index_to_vocab = None, vocab_to_index = None,
                     end_token = '<eos>', start_token = '<cls>',
                     pad_token = '<pad>', unk_token = '<unk>',
-                    newline_token = '<new>', mask_token = '<mask>'):
+                    newline_token = '<new>', mask_token = '<mask>',
+                    padding = True):
     words = tokenize_text(corpus_text, newline_token)
     
     word_count = Counter(words)
@@ -222,10 +223,11 @@ def tokenize_corpus(corpus_text, window_length,
     songs = ' '.join(words)
     songs = songs.split(f' {newline_token} {newline_token} {end_token} {newline_token} {newline_token} ')
     songs = [song.split(' ') for song in songs]
-    songs = [[pad_token]*(window_length-1) + [start_token] + song + [end_token] + [pad_token]*(window_length-1) for song in songs]
+    if padding:
+        songs = [[pad_token]*(window_length-1) + [start_token] + song + [end_token] + [pad_token]*(window_length-1) for song in songs]
     songs_token_ind = [[vocab_to_index.get(x) for x in song] for song in songs]
     
-    return words, word_count, index_to_vocab, vocab_to_index, songs, songs_token_ind
+    return words, word_count, index_to_vocab, vocab_to_index, songs[:-1], songs_token_ind[:-1]
 
 
 def generate_text(model,
