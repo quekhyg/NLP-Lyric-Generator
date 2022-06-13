@@ -44,12 +44,12 @@ def construct_datasets(x_encoder, x_decoder, y, batch_size, buffer = 10000, rand
     
     return dataset   
 
-def ind_to_input_fun(indices, depth, to_mask = False, mask_token = '<mask>', **kwargs):
+def ind_to_input_fun(indices, depth, to_mask = False, mask_index = None, **kwargs):
     input_oh_dec = tf.one_hot(indices, depth = depth)
     x_dec = tf.expand_dims(input_oh_dec, 0)
     
     if to_mask:
-        indices_enc = tf.concat([indices[1:],[mask_token]], 0)
+        indices_enc = indices[1:]+[mask_index]
         input_oh_enc = tf.one_hot(indices_enc, depth = depth)
         x_enc = tf.expand_dims(input_oh_enc, 0)
     else:
@@ -69,7 +69,7 @@ def update_input_fun(curr_input, pred_index, depth, to_mask = False, mask_index 
         x_enc = curr_input[0]
         x_enc = x_enc[:,1:-1,:]
         pred_oh_enc = tf.one_hot([pred_index, mask_index], depth = depth)
-        input_index_enc = tf.expand_dims([pred_oh_enc], 0)
+        input_index_enc = tf.expand_dims(pred_oh_enc, 0)
         x_enc = tf.concat([x_enc,input_index_enc], 1)
     else:
         x_enc = tf.identity(x_dec)
