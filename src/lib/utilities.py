@@ -225,7 +225,7 @@ def tokenize_corpus(corpus_text, window_length,
     songs = [[pad_token]*(window_length-1) + [start_token] + song + [end_token] + [pad_token]*(window_length-1) for song in songs]
     songs_token_ind = [[vocab_to_index.get(x) for x in song] for song in songs]
     
-    return words, word_count, index_to_vocab, vocab_to_index, songs, songs_token_ind
+    return words, word_count, index_to_vocab, vocab_to_index, songs[:-1], songs_token_ind[:-1]
 
 
 def generate_text(model,
