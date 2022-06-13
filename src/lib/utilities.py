@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import copy
 from collections import Counter
 import numpy as np
 import tensorflow.random as rnd
@@ -238,6 +239,7 @@ def generate_text(model,
                   end_token = '<eos>', start_token = '<cls>',
                   pad_token = '<pad>', unk_token = '<unk>',
                   newline_token = '<new>', mask_token = '<mask>',
+                  discard_repeat = False, temperature_growth_factor = 1.02,
                   **kwargs):
     if vocab_size is None:
         vocab_size = max(vocab_to_index_dict.values())
@@ -254,13 +256,13 @@ def generate_text(model,
 
     # Here batch size == 1.
     model.reset_states()
+    curr_temperature = copy.copy(temperature)
     while len(text_generated) < num_generate:
         prediction = model.predict(model_input)
 
         # Using a categorical distribution to predict the character returned by the model.
-        prediction = prediction / temperature
+        prediction = prediction / curr_temperature
         predicted_id = rnd.categorical(np.log(prediction), num_samples=1, seed = random_seed)[-1,0]
-        
         pred_word = index_to_vocab_dict[predicted_id.numpy()]
         
         if pred_word in [start_token, pad_token, unk_token, mask_token]:
@@ -269,12 +271,18 @@ def generate_text(model,
             break
         if pred_word == newline_token:
             pred_word = '\n'
-        
+        # Discard prediction if it is the same as previous prediction, and increase temperature so that other words may be generated
+        if discard_repeat:
+            if 'prev_pred_word' in locals() & pred_word == prev_pred_word:
+                curr_temperature *= temperature_growth_factor
+                continue
+            else:
+                curr_temperature = copy.copy(temperature) # reset temperature if there is no repeat
+                prev_pred_word = copy.copy(pred_word) # recording previous prediction for future reference
+                
         # Updating model input with new predicted word
         model_input = update_input_fun(model_input, predicted_id, **kwargs)
-        
         text_generated.append(pred_word)
-        
     
     return (start_string + ' ' + ' '.join(text_generated)), text_generated
 
