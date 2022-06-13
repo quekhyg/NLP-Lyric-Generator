@@ -33,7 +33,6 @@ def ind_to_input_fun(indices, depth, **kwargs):
 
 def update_input_fun(curr_input, pred_index, depth, **kwargs):
     pred_oh = tf.one_hot(pred_index, depth = depth)
-    assert curr_input[0] == curr_input[1], 'Error: Encoder and decoder inputs differ.'
     x = curr_input[1]
     x = x[:,1:,:]
     input_index_dec = tf.expand_dims([pred_oh], 0)

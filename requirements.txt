@@ -4,3 +4,4 @@ spacy
 rouge
 nltk
 aitextgen
+torch

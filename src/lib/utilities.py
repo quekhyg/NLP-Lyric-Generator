@@ -256,7 +256,7 @@ def generate_text(model,
 
     # Here batch size == 1.
     model.reset_states()
-    curr_temperature = temperature.copy()
+    curr_temperature = copy.copy(temperature)
     while len(text_generated) < num_generate:
         prediction = model.predict(model_input)
 
@@ -277,8 +277,8 @@ def generate_text(model,
                 curr_temperature *= temperature_growth_factor
                 continue
             else:
-                curr_temperature = temperature.copy() # reset temperature if there is no repeat
-                prev_pred_word = pred_word.copy() # recording previous prediction for future reference
+                curr_temperature = copy.copy(temperature) # reset temperature if there is no repeat
+                prev_pred_word = copy.copy(pred_word) # recording previous prediction for future reference
                 
         # Updating model input with new predicted word
         model_input = update_input_fun(model_input, predicted_id, **kwargs)
