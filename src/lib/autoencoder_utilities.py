@@ -31,11 +31,11 @@ def construct_song_seq(songs_token_ind, pad_index, max_len, n_copies = 10, mask_
                                     mask_prob = mask_prob,
                                     mask_index = mask_index,
                                     random_seed = random_seed)
-            assert len(x) == len(songs_token_ind[i])
+            y_padded = songs_token_ind[i]+[pad_index]*(max_len-len(x))
             x = x+[pad_index]*(max_len-len(x))
             x_encoder.append(x)
             x_decoder.append(x)
-            y.append(songs_token_ind[i]+[pad_index]*(max_len-len(x)))
+            y.append(y_padded)
 
     return x_encoder, x_decoder, y
     
