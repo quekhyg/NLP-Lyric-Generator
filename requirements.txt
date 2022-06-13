@@ -3,3 +3,4 @@ transformers
 spacy
 rouge
 nltk
+aitextgen
