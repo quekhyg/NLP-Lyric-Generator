@@ -11,6 +11,9 @@ class bleu_rouge:
     ----------------------------------------------------------------------
     """    
 
+    def __init__(self, prompt_ref=None):
+        self.prompt_ref = prompt_ref
+
     def get_prompt_reference(self, corpus, num_ref=10, seed=2022):
         """Get samples of prompt and their next sentence as reference
 
