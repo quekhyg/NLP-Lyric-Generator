@@ -275,7 +275,7 @@ def generate_text(model,
             pred_word = '\n'
         # Discard prediction if it is the same as previous prediction, and increase temperature so that other words may be generated
         if discard_repeat:
-            if 'prev_pred_word' in locals() & pred_word == prev_pred_word:
+            if 'prev_pred_word' in locals() and pred_word == prev_pred_word:
                 curr_temperature *= temperature_growth_factor
                 continue
             else:
