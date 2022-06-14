@@ -17,18 +17,27 @@ def construct_seq_data(songs_token_ind, window_length):
 def mask_last(x_encoder, vocab_to_index_dict, mask_token = '<mask>'):
     return [x[:-1] + [vocab_to_index_dict[mask_token]] for x in x_encoder]
 
-def mask_random_inputs(x_encoder, x_decoder, y, n_copies = 3, mask_prob = 0.15, mask_token = '<mask>', random_seed = 2022):
+def mask_random_inputs(x, mask_prob = 0.15, mask_index = None, random_seed = 2022):
     rng = np.random.default_rng(seed = random_seed)
-    masked_x_encoder = []
-    masked_x_decoder = []
-    masked_y = []
-    for x_enc, x_dec, y_datum in zip(x_encoder, x_decoder, y):
-        for n in n_copies:
-            masked_x = [word if rng.random() < mask_prob else mask_token for word in x_enc]
-            masked_x_encoder.append(masked_x)
-            masked_x_decoder.append(x_dec)
-            masked_y.append(y_datum)
-    return masked_x_encoder, masked_x_decoder, masked_y
+    return [word if rng.random() > mask_prob else mask_index for word in x]
+
+def construct_song_seq(songs_token_ind, pad_index, max_len, n_copies = 10, mask_prob = 0.15, mask_index = None, random_seed = 2022):
+    x_encoder = []
+    x_decoder = []
+    y = []
+    for n in range(n_copies):
+        for i in range(len(songs_token_ind)):
+            x = mask_random_inputs(songs_token_ind[i],
+                                    mask_prob = mask_prob,
+                                    mask_index = mask_index,
+                                    random_seed = random_seed)
+            y_padded = songs_token_ind[i]+[pad_index]*(max_len-len(x))
+            x = x+[pad_index]*(max_len-len(x))
+            x_encoder.append(x)
+            x_decoder.append(x)
+            y.append(y_padded)
+
+    return x_encoder, x_decoder, y
     
 def construct_datasets(x_encoder, x_decoder, y, batch_size, buffer = 10000, random_seed = 2022, one_hot = True, vocab_size = None):
     dataset = tf.data.Dataset.from_tensor_slices(((x_encoder, x_decoder), y))
