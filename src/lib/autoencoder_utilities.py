@@ -17,11 +17,14 @@ def construct_seq_data(songs_token_ind, window_length):
 def mask_last(x_encoder, vocab_to_index_dict, mask_token = '<mask>'):
     return [x[:-1] + [vocab_to_index_dict[mask_token]] for x in x_encoder]
 
-def mask_random_inputs(x, mask_prob = 0.15, mask_index = None, random_seed = 2022):
+def mask_random_inputs(x, mask_prob = 0.1, mask_index = None, random_seed = 2022):
     rng = np.random.default_rng(seed = random_seed)
     return [word if rng.random() > mask_prob else mask_index for word in x]
 
-def construct_song_seq(songs_token_ind, pad_index, max_len, n_copies = 10, mask_prob = 0.15, mask_index = None, random_seed = 2022):
+def construct_song_seq(songs_token_ind, max_len, pad_index, n_copies = 10, mask_prob = 0.1,
+                       mask_index = None,
+                       start_index = None,
+                       random_seed = 2022):
     x_encoder = []
     x_decoder = []
     y = []
@@ -31,10 +34,10 @@ def construct_song_seq(songs_token_ind, pad_index, max_len, n_copies = 10, mask_
                                     mask_prob = mask_prob,
                                     mask_index = mask_index,
                                     random_seed = random_seed)
-            y_padded = songs_token_ind[i]+[pad_index]*(max_len-len(x))
-            x = x+[pad_index]*(max_len-len(x))
-            x_encoder.append(x)
-            x_decoder.append(x)
+            x_padded = [start_index]+x+[pad_index]*(max_len-len(x)-1)
+            y_padded = [start_index]+songs_token_ind[i]+[pad_index]*(max_len-len(x)-1)
+            x_encoder.append(x_padded)
+            x_decoder.append(x_padded)
             y.append(y_padded)
 
     return x_encoder, x_decoder, y
