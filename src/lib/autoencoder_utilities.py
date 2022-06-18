@@ -24,6 +24,7 @@ def mask_random_inputs(x, mask_prob = 0.1, mask_index = None, random_seed = 2022
 def construct_song_seq(songs_token_ind, max_len, pad_index, n_copies = 10, mask_prob = 0.1,
                        mask_index = None,
                        start_index = None,
+                       end_index = None,
                        random_seed = 2022):
     x_encoder = []
     x_decoder = []
@@ -34,11 +35,12 @@ def construct_song_seq(songs_token_ind, max_len, pad_index, n_copies = 10, mask_
                                     mask_prob = mask_prob,
                                     mask_index = mask_index,
                                     random_seed = random_seed)
-            x_padded = [start_index]+x+[pad_index]*(max_len-len(x)-1)
-            y_padded = [start_index]+songs_token_ind[i]+[pad_index]*(max_len-len(x)-1)
-            x_encoder.append(x_padded)
-            x_decoder.append(x_padded)
-            y.append(y_padded)
+            x = [start_index] + x + [end_index]
+            x_padded = x + [pad_index]*(max_len-len(x)-2)
+            for i, word in enumerate(x[:-1]):
+                x_encoder.append(x_padded)
+                x_decoder.append(word)
+                y.append(x[i+1])
 
     return x_encoder, x_decoder, y
     
