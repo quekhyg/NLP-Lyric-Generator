@@ -242,6 +242,7 @@ def generate_text(model,
                   pad_token = '<pad>', unk_token = '<unk>',
                   newline_token = '<new>', mask_token = '<mask>',
                   discard_repeat = False, temperature_growth_factor = 1.02,
+                  rhyme_mask = None,
                   **kwargs):
     if vocab_size is None:
         vocab_size = max(vocab_to_index_dict.values())
@@ -264,6 +265,8 @@ def generate_text(model,
 
         # Using a categorical distribution to predict the character returned by the model.
         prediction = prediction / curr_temperature
+        if rhyme_mask is not None:
+            prediction *= rhyme_mask
         predicted_id = rnd.categorical(np.log(prediction), num_samples=1, seed = random_seed)[-1,0]
         pred_word = index_to_vocab_dict[predicted_id.numpy()]
         
