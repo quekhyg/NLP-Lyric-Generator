@@ -29,7 +29,7 @@ Here in this country I call home​ <br>
 Nothing in this world compares​ <br>
 it's our Singaporean life​ <br>
 Everyone is family friend and neighbour​ <br>
-Living in harmony​ <br>
+Living in harmony​ <br><br>
 
 <b>PRE-CHORUS</b> <br>​
 Nothing in this world compares​ <br>
@@ -54,7 +54,7 @@ till I am born everyday​ <br>
 Because tomorrow night feeling lives​ <br>
 Are gone by day you are away​ <br>
 I'll be late evening​ <br>
-cos that dawns again awake <br>​
+cos that dawns again awake 
 
 <b>CHORUS</b> <br>
 <b>CHORUS</b> <br>
