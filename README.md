@@ -20,6 +20,9 @@ We experiment with generating song lyrics with various NN architectures, trained
 ```
 
 ## The NDP 2023 Theme Song 
+
+https://user-images.githubusercontent.com/58768271/175760305-2ff60a79-bdf3-47a9-a4d5-147833d6359b.mp4
+
 <br>
 <b>VERSE 1​</b> <br>
 Here in this country I call home​ <br>
