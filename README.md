@@ -19,7 +19,7 @@ We experiment with generating song lyrics with various NN architectures, trained
 │   ├── lib             <- source and utilities code
 ```
 
-## The NDP 2023 Theme Song 
+## The NDP 2023 AI-Generated Theme Song 
 
 https://user-images.githubusercontent.com/58768271/175760305-2ff60a79-bdf3-47a9-a4d5-147833d6359b.mp4
 
