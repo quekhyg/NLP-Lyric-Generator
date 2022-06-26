@@ -4,7 +4,7 @@
   <img src="images/singapore_background.jpg">
 </p>
 
-We experiment with generating song lyrics with various NN architectures, trained on a corpus of Singapore patriotic songs.
+We experiment with generating song lyrics with various deep learning architectures, trained on a corpus of Singapore patriotic songs. We then use a pre-trained AI model to generate music and vocals from these lyrics.
 
 ## Project Directory Structure
 
